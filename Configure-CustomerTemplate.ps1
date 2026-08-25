@@ -1,10 +1,8 @@
 [CmdletBinding()]
 param(
-    [Parameter()]
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$CapacityMetricsWorkspace,
-
-    [Parameter()]
-    [string]$CapacityMetricsEndpoint,
 
     [Parameter()]
     [ValidateNotNullOrEmpty()]
@@ -201,184 +199,22 @@ function ConvertTo-MString {
 }
 
 function Resolve-CapacityMetricsEndpoint {
-    param(
-        [string]$Workspace,
-        [string]$Endpoint
-    )
+    param([Parameter(Mandatory)][string]$Workspace)
 
     $xmlaPrefix = "powerbi://api.powerbi.com/v1.0/myorg/"
-    $candidate = if (-not [string]::IsNullOrWhiteSpace($Endpoint)) {
-        $Endpoint.Trim()
-    }
-    elseif (-not [string]::IsNullOrWhiteSpace($Workspace)) {
-        $Workspace.Trim()
-    }
-    else {
-        throw (
-            "Specify -CapacityMetricsWorkspace or -CapacityMetricsEndpoint. " +
-            "Use the workspace that contains the Fabric Capacity Metrics semantic model."
-        )
-    }
-
-    if ($candidate.StartsWith($xmlaPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
-        $workspaceSegment = $candidate.Substring($xmlaPrefix.Length).TrimEnd("/")
-    }
-    elseif ($candidate -match '^powerbi://') {
-        throw (
-            "Unsupported Capacity Metrics XMLA endpoint. Expected an endpoint that starts " +
-            "with '$xmlaPrefix'."
-        )
-    }
-    else {
-        $workspaceSegment = $candidate
-    }
-
-    if ([string]::IsNullOrWhiteSpace($workspaceSegment)) {
-        throw "The Capacity Metrics XMLA endpoint does not contain a workspace name."
-    }
-
-    if ($workspaceSegment.Contains("?") -or $workspaceSegment.Contains("#")) {
-        throw "The Capacity Metrics XMLA endpoint must not contain a query string or fragment."
+    $workspaceName = $Workspace.Trim()
+    if ($workspaceName -match '^powerbi://') {
+        throw "Pass the Capacity Metrics workspace name, not an XMLA endpoint."
     }
 
     try {
-        $workspaceName = [Uri]::UnescapeDataString($workspaceSegment)
         $encodedWorkspace = [Uri]::EscapeDataString($workspaceName)
     }
     catch {
-        throw "The Capacity Metrics workspace or XMLA endpoint contains invalid escaping."
+        throw "The Capacity Metrics workspace name contains invalid characters."
     }
 
     return $xmlaPrefix + $encodedWorkspace
-}
-
-function Find-CapacityMetricsWorkspace {
-    param(
-        [Parameter(Mandatory)]
-        [string]$Model
-    )
-
-    $token = Get-FabricAccessToken
-    $workspaces = @(
-        Get-FabricCollection `
-            -Uri "https://api.fabric.microsoft.com/v1/workspaces" `
-            -CollectionProperty "value" `
-            -Token $token
-    )
-    $matches = [System.Collections.Generic.List[object]]::new()
-
-    foreach ($workspace in $workspaces) {
-        try {
-            $itemsUri =
-                "https://api.fabric.microsoft.com/v1/workspaces/" +
-                "$($workspace.id)/items?type=SemanticModel"
-            $models = @(
-                Get-FabricCollection `
-                    -Uri $itemsUri `
-                    -CollectionProperty "value" `
-                    -Token $token |
-                    Where-Object {
-                        $_.type -eq "SemanticModel" -and
-                        $_.displayName -ceq $Model
-                    }
-            )
-            if ($models.Count -gt 0) {
-                $matches.Add($workspace)
-            }
-        }
-        catch {
-            Write-Verbose (
-                "Couldn't inspect semantic models in workspace '{0}': {1}" -f
-                $workspace.displayName,
-                $_.Exception.Message
-            )
-        }
-    }
-
-    if ($matches.Count -eq 0) {
-        throw (
-            "No accessible workspace contains a semantic model named '$Model'. " +
-            "Install the Fabric Capacity Metrics app or request access to its " +
-            "workspace and semantic model."
-        )
-    }
-
-    if ($matches.Count -gt 1) {
-        $workspaceNames = @(
-            $matches |
-                ForEach-Object { "'$($_.displayName)'" } |
-                Sort-Object
-        )
-        throw (
-            "More than one accessible workspace contains '$Model': " +
-            ($workspaceNames -join ", ") +
-            ". Run the command again with -CapacityMetricsWorkspace and one " +
-            "of these exact workspace names."
-        )
-    }
-
-    return $matches[0].displayName
-}
-
-function Assert-CapacityMetricsModel {
-    param(
-        [Parameter(Mandatory)]
-        [string]$Endpoint,
-
-        [Parameter(Mandatory)]
-        [string]$Model
-    )
-
-    $xmlaPrefix = "powerbi://api.powerbi.com/v1.0/myorg/"
-    $workspaceName = [Uri]::UnescapeDataString(
-        $Endpoint.Substring($xmlaPrefix.Length)
-    )
-    $token = Get-FabricAccessToken
-    $workspaces = @(
-        Get-FabricCollection `
-            -Uri "https://api.fabric.microsoft.com/v1/workspaces" `
-            -CollectionProperty "value" `
-            -Token $token |
-            Where-Object { $_.displayName -ceq $workspaceName }
-    )
-
-    if ($workspaces.Count -eq 0) {
-        throw (
-            "Capacity Metrics workspace '$workspaceName' wasn't found or isn't " +
-            "accessible. Copy the Connection link from the workspace that contains " +
-            "the '$Model' semantic model, not from a Warehouse workspace."
-        )
-    }
-
-    if ($workspaces.Count -gt 1) {
-        throw (
-            "More than one accessible workspace is named '$workspaceName'. Rename " +
-            "the Capacity Metrics workspace so its Connection link is unambiguous."
-        )
-    }
-
-    $itemsUri =
-        "https://api.fabric.microsoft.com/v1/workspaces/" +
-        "$($workspaces[0].id)/items"
-    $models = @(
-        Get-FabricCollection `
-            -Uri $itemsUri `
-            -CollectionProperty "value" `
-            -Token $token |
-            Where-Object {
-                $_.type -eq "SemanticModel" -and
-                $_.displayName -ceq $Model
-            }
-    )
-
-    if ($models.Count -eq 0) {
-        throw (
-            "Semantic model '$Model' wasn't found in workspace '$workspaceName'. " +
-            "Copy the Connection link from the workspace that contains the Capacity " +
-            "Metrics semantic model, or pass its exact name with " +
-            "-CapacityMetricsModel."
-        )
-    }
 }
 
 function Convert-SqlTo-MString {
@@ -549,21 +385,8 @@ foreach ($warehouse in $warehouses) {
     }
 }
 
-$resolvedCapacityMetricsWorkspace = $CapacityMetricsWorkspace
-if (
-    [string]::IsNullOrWhiteSpace($CapacityMetricsEndpoint) -and
-    [string]::IsNullOrWhiteSpace($resolvedCapacityMetricsWorkspace)
-) {
-    $resolvedCapacityMetricsWorkspace = Find-CapacityMetricsWorkspace `
-        -Model $CapacityMetricsModel
-}
-
 $capacityEndpoint = Resolve-CapacityMetricsEndpoint `
-    -Workspace $resolvedCapacityMetricsWorkspace `
-    -Endpoint $CapacityMetricsEndpoint
-Assert-CapacityMetricsModel `
-    -Endpoint $capacityEndpoint `
-    -Model $CapacityMetricsModel
+    -Workspace $CapacityMetricsWorkspace
 
 if (Test-Path -LiteralPath $OutputPath) {
     if (-not $Force) {

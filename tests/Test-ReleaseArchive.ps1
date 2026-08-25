@@ -98,10 +98,7 @@ try {
 
     $wrapper = @'
 param(
-    [Parameter(Mandatory)][string]$OutputPath,
-    [Parameter(Mandatory)]
-    [ValidateSet("Automatic", "Workspace")]
-    [string]$ConnectionMode
+    [Parameter(Mandatory)][string]$OutputPath
 )
 
 function global:az {
@@ -121,30 +118,6 @@ function global:Invoke-RestMethod {
             workspaces = @([pscustomobject]@{
                 id = "11111111-1111-1111-1111-111111111111"
                 name = "Customer Workspace"
-            })
-            continuationUri = $null
-        }
-    }
-
-    if ($Uri -match '/v1/workspaces$') {
-        return [pscustomobject]@{
-            value = @([pscustomobject]@{
-                id = "44444444-4444-4444-4444-444444444444"
-                displayName = "Customer Capacity Metrics"
-            })
-            continuationUri = $null
-        }
-    }
-
-    if (
-        $Uri -match
-        '/workspaces/44444444-4444-4444-4444-444444444444/items(\?type=SemanticModel)?$'
-    ) {
-        return [pscustomobject]@{
-            value = @([pscustomobject]@{
-                id = "55555555-5555-5555-5555-555555555555"
-                displayName = "Fabric Capacity Metrics"
-                type = "SemanticModel"
             })
             continuationUri = $null
         }
@@ -174,11 +147,9 @@ function global:Invoke-RestMethod {
 
 $parameters = @{
     CapacityId = "33333333-3333-3333-3333-333333333333"
+    CapacityMetricsWorkspace = "Customer Capacity Metrics"
     OutputPath = $OutputPath
     Force = $true
-}
-if ($ConnectionMode -eq "Workspace") {
-    $parameters.CapacityMetricsWorkspace = "Customer Capacity Metrics"
 }
 
 & (Join-Path $PSScriptRoot "Configure-CustomerTemplate.ps1") @parameters
@@ -189,8 +160,7 @@ if ($ConnectionMode -eq "Workspace") {
         "-NoProfile",
         "-ExecutionPolicy", "Bypass",
         "-File", $wrapperPath,
-        "-OutputPath", $ps51Output,
-        "-ConnectionMode", "Automatic"
+        "-OutputPath", $ps51Output
     )
     & powershell.exe @ps51Args
     Assert-True `
@@ -200,8 +170,7 @@ if ($ConnectionMode -eq "Workspace") {
     $ps7Args = @(
         "-NoProfile",
         "-File", $wrapperPath,
-        "-OutputPath", $ps7Output,
-        "-ConnectionMode", "Workspace"
+        "-OutputPath", $ps7Output
     )
     & pwsh.exe @ps7Args
     Assert-True `

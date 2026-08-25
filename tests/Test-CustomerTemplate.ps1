@@ -7,9 +7,6 @@ $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) (
     "fabric-dw-query-capacity-correlation-" + [Guid]::NewGuid().ToString("N")
 )
 $workspaceOutput = Join-Path $testRoot "Configured-Workspace"
-$endpointOutput = Join-Path $testRoot "Configured-Endpoint"
-$automaticOutput = Join-Path $testRoot "Configured-Automatic"
-$invalidOutput = Join-Path $testRoot "Configured-Invalid"
 $capacityId = "33333333-3333-3333-3333-333333333333"
 
 function Assert-Equal {
@@ -57,30 +54,6 @@ function Invoke-RestMethod {
         }
     }
 
-    if ($Uri -match '/v1/workspaces$') {
-        return [pscustomobject]@{
-            value = @([pscustomobject]@{
-                id = "44444444-4444-4444-4444-444444444444"
-                displayName = "Customer Capacity Metrics"
-            })
-            continuationUri = $null
-        }
-    }
-
-    if (
-        $Uri -match
-        '/workspaces/44444444-4444-4444-4444-444444444444/items(\?type=SemanticModel)?$'
-    ) {
-        return [pscustomobject]@{
-            value = @([pscustomobject]@{
-                id = "55555555-5555-5555-5555-555555555555"
-                displayName = "Fabric Capacity Metrics"
-                type = "SemanticModel"
-            })
-            continuationUri = $null
-        }
-    }
-
     if ($Uri -match '/items$') {
         return [pscustomobject]@{
             value = @([pscustomobject]@{
@@ -114,18 +87,6 @@ try {
     $expectedEndpoint =
         "powerbi://api.powerbi.com/v1.0/myorg/Customer%20Capacity%20Metrics"
 
-    & (Join-Path $root "Configure-CustomerTemplate.ps1") `
-        -CapacityId $capacityId `
-        -OutputPath $automaticOutput
-
-    $automaticSettings = Get-Content -Raw -Encoding UTF8 -LiteralPath (
-        Join-Path $automaticOutput "connection-settings.json"
-    ) | ConvertFrom-Json
-    Assert-Equal `
-        -Actual $automaticSettings.CapacityMetricsEndpoint `
-        -Expected $expectedEndpoint `
-        -Message "Automatic discovery must resolve the Capacity Metrics workspace."
-
     $workspaceSettings = Get-Content -Raw -Encoding UTF8 -LiteralPath (
         Join-Path $workspaceOutput "connection-settings.json"
     ) | ConvertFrom-Json
@@ -134,20 +95,7 @@ try {
         -Expected $expectedEndpoint `
         -Message "Workspace names must produce a normalized XMLA endpoint."
 
-    & (Join-Path $root "Configure-CustomerTemplate.ps1") `
-        -CapacityMetricsEndpoint $expectedEndpoint `
-        -CapacityId $capacityId `
-        -OutputPath $endpointOutput
-
-    $endpointSettings = Get-Content -Raw -Encoding UTF8 -LiteralPath (
-        Join-Path $endpointOutput "connection-settings.json"
-    ) | ConvertFrom-Json
-    Assert-Equal `
-        -Actual $endpointSettings.CapacityMetricsEndpoint `
-        -Expected $expectedEndpoint `
-        -Message "An encoded XMLA endpoint must remain stable."
-
-    $tmdlFiles = Get-ChildItem -LiteralPath $endpointOutput -Recurse -Filter *.tmdl
+    $tmdlFiles = Get-ChildItem -LiteralPath $workspaceOutput -Recurse -Filter *.tmdl
     $endpointMatches = @(
         $tmdlFiles | Select-String -SimpleMatch $expectedEndpoint
     )
@@ -156,7 +104,7 @@ try {
         -Message "Generated TMDL doesn't contain the expected XMLA endpoint."
 
     $placeholders = @(
-        Get-ChildItem -LiteralPath $endpointOutput -Recurse -File |
+        Get-ChildItem -LiteralPath $workspaceOutput -Recurse -File |
             Select-String -Pattern "\{\{[A-Z0-9_]+\}\}"
     )
     Assert-Equal `
@@ -165,31 +113,14 @@ try {
         -Message "Generated output contains unresolved placeholders."
 
     $configuredCsv = @(Import-Csv -LiteralPath (
-        Join-Path $endpointOutput "warehouses.configured.csv"
+        Join-Path $workspaceOutput "warehouses.configured.csv"
     ))
     Assert-Equal `
         -Actual $configuredCsv.Count `
         -Expected 1 `
         -Message "Configured Warehouse inventory has an unexpected row count."
 
-    $invalidError = $null
-    try {
-        & (Join-Path $root "Configure-CustomerTemplate.ps1") `
-            -CapacityMetricsWorkspace "Warehouse-Only Workspace" `
-            -CapacityId $capacityId `
-            -OutputPath $invalidOutput
-    }
-    catch {
-        $invalidError = $_.Exception.Message
-    }
-    Assert-True `
-        -Condition ($invalidError -like "*wasn't found*") `
-        -Message "A mismatched Capacity Metrics workspace must fail configuration."
-    Assert-True `
-        -Condition (-not (Test-Path -LiteralPath $invalidOutput)) `
-        -Message "Invalid Capacity Metrics settings must not create output."
-
-    $jsonFiles = Get-ChildItem -LiteralPath $endpointOutput -Recurse -Filter *.json
+    $jsonFiles = Get-ChildItem -LiteralPath $workspaceOutput -Recurse -Filter *.json
     foreach ($jsonFile in $jsonFiles) {
         $null = Get-Content -Raw -Encoding UTF8 -LiteralPath $jsonFile.FullName |
             ConvertFrom-Json
