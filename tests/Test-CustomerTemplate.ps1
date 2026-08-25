@@ -6,10 +6,9 @@ $root = Split-Path -Parent $PSScriptRoot
 $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) (
     "fabric-dw-query-capacity-correlation-" + [Guid]::NewGuid().ToString("N")
 )
-$csvPath = Join-Path $testRoot "warehouses.csv"
 $workspaceOutput = Join-Path $testRoot "Configured-Workspace"
 $endpointOutput = Join-Path $testRoot "Configured-Endpoint"
-$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+$capacityId = "33333333-3333-3333-3333-333333333333"
 
 function Assert-Equal {
     param(
@@ -34,17 +33,56 @@ function Assert-True {
     }
 }
 
+function az {
+    $global:LASTEXITCODE = 0
+    return "test-token"
+}
+
+function Invoke-RestMethod {
+    param(
+        [string]$Method,
+        [string]$Uri,
+        [hashtable]$Headers
+    )
+
+    if ($Uri -match '/v1/admin/workspaces\?') {
+        return [pscustomobject]@{
+            workspaces = @([pscustomobject]@{
+                id = "11111111-1111-1111-1111-111111111111"
+                name = "Customer Workspace"
+            })
+            continuationUri = $null
+        }
+    }
+
+    if ($Uri -match '/items$') {
+        return [pscustomobject]@{
+            value = @([pscustomobject]@{
+                id = "22222222-2222-2222-2222-222222222222"
+                displayName = "Customer Warehouse"
+                type = "Warehouse"
+            })
+            continuationUri = $null
+        }
+    }
+
+    if ($Uri -match '/warehouses/[0-9a-f-]+$') {
+        return [pscustomobject]@{
+            properties = [pscustomobject]@{
+                connectionString = "customer.datawarehouse.fabric.microsoft.com"
+            }
+        }
+    }
+
+    throw "Unexpected mock request: $Uri"
+}
+
 try {
     New-Item -ItemType Directory -Path $testRoot | Out-Null
-    $csv = @"
-WorkspaceName,WorkspaceId,WarehouseName,WarehouseItemId,SqlEndpoint
-Customer Workspace,11111111-1111-1111-1111-111111111111,Customer Warehouse,22222222-2222-2222-2222-222222222222,customer.datawarehouse.fabric.microsoft.com
-"@
-    [System.IO.File]::WriteAllText($csvPath, $csv, $utf8NoBom)
 
     & (Join-Path $root "Configure-CustomerTemplate.ps1") `
         -CapacityMetricsWorkspace "Customer Capacity Metrics" `
-        -WarehouseConfigPath $csvPath `
+        -CapacityId $capacityId `
         -OutputPath $workspaceOutput
 
     $expectedEndpoint =
@@ -59,7 +97,7 @@ Customer Workspace,11111111-1111-1111-1111-111111111111,Customer Warehouse,22222
 
     & (Join-Path $root "Configure-CustomerTemplate.ps1") `
         -CapacityMetricsEndpoint $expectedEndpoint `
-        -WarehouseConfigPath $csvPath `
+        -CapacityId $capacityId `
         -OutputPath $endpointOutput
 
     $endpointSettings = Get-Content -Raw -Encoding UTF8 -LiteralPath (

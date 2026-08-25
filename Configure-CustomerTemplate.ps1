@@ -1,4 +1,4 @@
-[CmdletBinding(DefaultParameterSetName = "Csv")]
+[CmdletBinding()]
 param(
     [Parameter()]
     [string]$CapacityMetricsWorkspace,
@@ -10,20 +10,16 @@ param(
     [ValidateNotNullOrEmpty()]
     [string]$CapacityMetricsModel = "Fabric Capacity Metrics",
 
-    [Parameter(Mandatory, ParameterSetName = "Csv")]
-    [ValidateScript({ Test-Path -LiteralPath $_ -PathType Leaf })]
-    [string]$WarehouseConfigPath,
-
-    [Parameter(Mandatory, ParameterSetName = "Capacity")]
+    [Parameter(Mandatory)]
     [ValidatePattern(
         '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
     )]
     [string]$CapacityId,
 
-    [Parameter(ParameterSetName = "Capacity")]
+    [Parameter()]
     [string]$WorkspaceNamePattern = ".*",
 
-    [Parameter(ParameterSetName = "Capacity")]
+    [Parameter()]
     [string]$WarehouseNamePattern = ".*",
 
     [Parameter()]
@@ -389,22 +385,17 @@ if (-not (Test-Path -LiteralPath $templatePath)) {
     throw "Template folder not found: $templatePath"
 }
 
-if ($PSCmdlet.ParameterSetName -eq "Capacity") {
-    $warehouses = @(
-        Get-WarehousesForCapacity `
-            -Capacity $CapacityId `
-            -WorkspacePattern $WorkspaceNamePattern `
-            -WarehousePattern $WarehouseNamePattern
-    )
-}
-else {
-    $warehouses = @(Import-Csv -LiteralPath $WarehouseConfigPath)
-}
+$warehouses = @(
+    Get-WarehousesForCapacity `
+        -Capacity $CapacityId `
+        -WorkspacePattern $WorkspaceNamePattern `
+        -WarehousePattern $WarehouseNamePattern
+)
 
 $requiredColumns = "WarehouseName", "WarehouseItemId", "SqlEndpoint"
 foreach ($column in $requiredColumns) {
     if (-not $warehouses -or -not ($warehouses[0].PSObject.Properties.Name -contains $column)) {
-        throw "Warehouse configuration must include the '$column' column."
+        throw "Warehouse discovery results must include the '$column' property."
     }
 }
 

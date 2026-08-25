@@ -17,7 +17,6 @@ $packageEntries = @(
     "Configure-CustomerTemplate.ps1",
     "query-details.template.sql",
     "query-executions.template.sql",
-    "warehouses.example.csv",
     "README.md"
 )
 

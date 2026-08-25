@@ -10,7 +10,7 @@ $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) (
     "fabric-dw-query-capacity-release-" + [Guid]::NewGuid().ToString("N")
 )
 $extractPath = Join-Path $testRoot "Package"
-$csvPath = Join-Path $extractPath "warehouses.csv"
+$wrapperPath = Join-Path $extractPath "Invoke-MockedConfiguration.ps1"
 $ps51Output = Join-Path $extractPath "Configured-PS51"
 $ps7Output = Join-Path $extractPath "Configured-PS7"
 $expectedEndpoint =
@@ -96,22 +96,81 @@ try {
     New-Item -ItemType Directory -Path $extractPath -Force | Out-Null
     Expand-Archive -LiteralPath $ArchivePath -DestinationPath $extractPath
 
-    $csv = @"
-WorkspaceName,WorkspaceId,WarehouseName,WarehouseItemId,SqlEndpoint
-Customer Workspace,11111111-1111-1111-1111-111111111111,Customer Warehouse,22222222-2222-2222-2222-222222222222,customer.datawarehouse.fabric.microsoft.com
-"@
-    [System.IO.File]::WriteAllText($csvPath, $csv, $utf8NoBom)
+    $wrapper = @'
+param(
+    [Parameter(Mandatory)][string]$OutputPath,
+    [Parameter(Mandatory)]
+    [ValidateSet("Endpoint", "Workspace")]
+    [string]$ConnectionMode
+)
 
-    $configureScript = Join-Path $extractPath "Configure-CustomerTemplate.ps1"
+function global:az {
+    $global:LASTEXITCODE = 0
+    return "test-token"
+}
+
+function global:Invoke-RestMethod {
+    param(
+        [string]$Method,
+        [string]$Uri,
+        [hashtable]$Headers
+    )
+
+    if ($Uri -match '/v1/admin/workspaces\?') {
+        return [pscustomobject]@{
+            workspaces = @([pscustomobject]@{
+                id = "11111111-1111-1111-1111-111111111111"
+                name = "Customer Workspace"
+            })
+            continuationUri = $null
+        }
+    }
+
+    if ($Uri -match '/items$') {
+        return [pscustomobject]@{
+            value = @([pscustomobject]@{
+                id = "22222222-2222-2222-2222-222222222222"
+                displayName = "Customer Warehouse"
+                type = "Warehouse"
+            })
+            continuationUri = $null
+        }
+    }
+
+    if ($Uri -match '/warehouses/[0-9a-f-]+$') {
+        return [pscustomobject]@{
+            properties = [pscustomobject]@{
+                connectionString = "customer.datawarehouse.fabric.microsoft.com"
+            }
+        }
+    }
+
+    throw "Unexpected mock request: $Uri"
+}
+
+$parameters = @{
+    CapacityId = "33333333-3333-3333-3333-333333333333"
+    OutputPath = $OutputPath
+    Force = $true
+}
+if ($ConnectionMode -eq "Endpoint") {
+    $parameters.CapacityMetricsEndpoint =
+        "powerbi://api.powerbi.com/v1.0/myorg/Customer Capacity Metrics"
+}
+else {
+    $parameters.CapacityMetricsWorkspace = "Customer Capacity Metrics"
+}
+
+& (Join-Path $PSScriptRoot "Configure-CustomerTemplate.ps1") @parameters
+'@
+    [System.IO.File]::WriteAllText($wrapperPath, $wrapper, $utf8NoBom)
+
     $ps51Args = @(
         "-NoProfile",
         "-ExecutionPolicy", "Bypass",
-        "-File", $configureScript,
-        "-CapacityMetricsEndpoint",
-        "powerbi://api.powerbi.com/v1.0/myorg/Customer Capacity Metrics",
-        "-WarehouseConfigPath", $csvPath,
+        "-File", $wrapperPath,
         "-OutputPath", $ps51Output,
-        "-Force"
+        "-ConnectionMode", "Endpoint"
     )
     & powershell.exe @ps51Args
     Assert-True `
@@ -120,11 +179,9 @@ Customer Workspace,11111111-1111-1111-1111-111111111111,Customer Warehouse,22222
 
     $ps7Args = @(
         "-NoProfile",
-        "-File", $configureScript,
-        "-CapacityMetricsWorkspace", "Customer Capacity Metrics",
-        "-WarehouseConfigPath", $csvPath,
+        "-File", $wrapperPath,
         "-OutputPath", $ps7Output,
-        "-Force"
+        "-ConnectionMode", "Workspace"
     )
     & pwsh.exe @ps7Args
     Assert-True `

@@ -8,14 +8,14 @@ tenant.
 ## Package contents
 
 The repository contains `Template`, the configuration script, SQL templates,
-an example Warehouse inventory, setup tests, and the customer README. The
-customer ZIP excludes repository-only test and build files. It does not contain
-configured Warehouse connections or credentials.
+setup tests, and the customer README. The customer ZIP excludes repository-only
+test and build files. It does not contain configured Warehouse connections or
+credentials.
 
-The `Configured` output intentionally contains the selected SQL endpoint names,
-Warehouse names, Warehouse item IDs, and Capacity Metrics model reference. It
-does not contain reusable credentials. Run the configuration script to generate
-a new `Configured` project using resources in your tenant.
+The `Configured` output intentionally contains the discovered SQL endpoint
+names, Warehouse names, Warehouse item IDs, and Capacity Metrics model
+reference. It does not contain reusable credentials. Run the configuration
+script to generate a new `Configured` project using resources in your tenant.
 
 ## What the report shows
 
@@ -41,11 +41,11 @@ execution once even when it overlaps several hours.
 - Windows PowerShell 5.1 or PowerShell 7.
 - Access to the Microsoft Fabric Capacity Metrics semantic model.
 - Read and Query Insights access to every included Warehouse.
-- Azure CLI authentication for automatic capacity discovery (Option 1 only).
+- Azure CLI authentication for capacity discovery.
 - Fabric administrator permissions for capacity-wide workspace discovery
-  (Option 1 only).
+  across the tenant.
 
-## Option 1: Discover all Warehouses on a capacity
+## Discover Warehouses on a capacity
 
 In the workspace that contains the Fabric Capacity Metrics semantic model:
 
@@ -57,8 +57,14 @@ Use the complete copied value as `-CapacityMetricsEndpoint`. The connection
 link starts with `powerbi://api.powerbi.com/v1.0/myorg/`. Don't use the
 workspace URL from the browser address bar or append the semantic-model name.
 
-Run `az login`, then configure the project with the Fabric capacity ID and the
-copied XMLA server:
+Get the Fabric capacity ID:
+
+1. In Fabric, select **Settings** > **Admin portal**.
+2. Open **Capacity settings** and select the capacity.
+3. Copy the GUID after `/capacities/` in the browser URL.
+
+Run `az login`, then configure the project with the capacity ID and copied
+connection link:
 
 ```powershell
 .\Configure-CustomerTemplate.ps1 `
@@ -84,36 +90,10 @@ Optional filters accept regular expressions:
 -WorkspaceNamePattern "^Production" -WarehouseNamePattern "Warehouse$"
 ```
 
-## Option 2: Supply a Warehouse CSV
-
-Use this method without Fabric administrator permissions or when only selected
-Warehouses should be included. Copy the example file, then replace every
-`REPLACE-WITH-...` value with details from the customer's Fabric workspace:
-
-```powershell
-Copy-Item .\warehouses.example.csv .\warehouses.csv
-```
-
-```csv
-WorkspaceName,WorkspaceId,WarehouseName,WarehouseItemId,SqlEndpoint
-Finance,workspace-guid,FinanceWarehouse,warehouse-guid,your-endpoint.datawarehouse.fabric.microsoft.com
-Sales,workspace-guid,SalesWarehouse,warehouse-guid,your-endpoint.datawarehouse.fabric.microsoft.com
-```
-
-The SQL endpoint is available in the Warehouse settings or connection details.
-Use only the host name, without `https://` or a database suffix. The script
-rejects placeholder Warehouse IDs, so the example file cannot accidentally
-produce a publishable project.
-
-```powershell
-.\Configure-CustomerTemplate.ps1 `
-  -CapacityMetricsEndpoint "powerbi://api.powerbi.com/v1.0/myorg/Capacity%20Metrics%20Workspace" `
-  -WarehouseConfigPath ".\warehouses.csv"
-```
-
-The script creates a separate `Configured` folder and writes the exact included
-inventory to `warehouses.configured.csv`. It also writes the normalized Capacity
-Metrics XMLA server and semantic-model name to `connection-settings.json`.
+The script creates a separate `Configured` folder and writes the discovered
+inventory to `warehouses.configured.csv`. It also writes the normalized
+Capacity Metrics XMLA server and semantic-model name to
+`connection-settings.json`.
 
 Instead of `-CapacityMetricsEndpoint`, you can pass the exact workspace display
 name with `-CapacityMetricsWorkspace`. The script converts the display name to
@@ -187,9 +167,9 @@ the Warehouses. If the sign-in prompt selects another tenant, sign out of the
 failed data source in Power BI Desktop and authenticate again with the correct
 organizational account. Reauthenticate when a token or permission has expired.
 
-Azure CLI is required only for automatic capacity discovery. Run `az account
-show` to confirm the active tenant before using Option 1. CSV setup doesn't
-require an Azure subscription or Fabric administrator permission.
+Run `az account show` to confirm the active tenant before capacity discovery.
+If the identity isn't a Fabric administrator, discovery falls back to
+workspaces that the signed-in identity can access on the requested capacity.
 
 ### Missing query rows
 
