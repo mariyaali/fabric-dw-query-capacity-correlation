@@ -1,0 +1,114 @@
+table 'Usage Summary (Last 14 days)'
+	isHidden
+	lineageTag: 7ae57ace-5461-4337-a001-b98b96d87206
+	sourceLineageTag: fdf2aee5-ca79-4a14-a3a2-42960388dfa4
+
+	column Timestamp
+		dataType: dateTime
+		isHidden
+		formatString: General Number
+		lineageTag: f083b295-e725-48d4-a2e5-f0dd291d90cb
+		sourceLineageTag: bfcdd0c4-70c1-4d6b-914a-6f724ab106fc
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Timestamp
+
+		annotation SummarizationSetBy = User
+
+	column 'Capacity Id'
+		dataType: string
+		isHidden
+		lineageTag: 259df814-fc11-4adf-90cb-72042b9a73d3
+		sourceLineageTag: 757c4543-01a8-456a-8023-d3aca1b72ac8
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Capacity Id
+
+		annotation SummarizationSetBy = User
+
+	column 'CU (s)'
+		dataType: double
+		isHidden
+		lineageTag: 312d47cb-e040-4351-9c2f-8dd39d7d3e20
+		sourceLineageTag: f593025e-99b5-4e9d-ba31-80b0e7674e74
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: CU (s)
+
+		annotation SummarizationSetBy = User
+
+	column 'Average CU %'
+		dataType: double
+		isHidden
+		lineageTag: afb5d07a-d29c-4676-bdd7-a7125cd8093a
+		sourceLineageTag: e9688dbf-d8a6-4015-a3be-f8c806ff0c48
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Average CU %
+
+		annotation SummarizationSetBy = User
+
+	column 'Maximum CU %'
+		dataType: double
+		isHidden
+		lineageTag: c0faedb7-abed-4478-95d4-430c0be6113e
+		sourceLineageTag: 9c08003c-c4af-4588-a718-54e936ec4ee5
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Maximum CU %
+
+		annotation SummarizationSetBy = User
+
+	column 'Interactive rejection (s)'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7e502217-f59e-435c-9a71-dac14f8219d8
+		sourceLineageTag: 17ee83b3-224d-439a-ae68-4f5ff04c1762
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Interactive rejection (s)
+
+		annotation SummarizationSetBy = User
+
+	column 'Background rejection (s)'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 912d1599-a812-46c4-8d41-cf3f090efa8d
+		sourceLineageTag: b2b28cd2-3ed9-4e92-9002-7d689dd5717b
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Background rejection (s)
+
+		annotation SummarizationSetBy = User
+
+	column 'Interactive delay (s)'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e2d662df-d2cb-406f-aa3e-227f4a808e60
+		sourceLineageTag: cc3387fc-b259-42f5-a927-9884a1c82b77
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Interactive delay (s)
+
+		annotation SummarizationSetBy = User
+
+	column 'Average utilization'
+		dataType: double
+		isHidden
+		lineageTag: 00f453b7-457a-4591-b567-45b48e9f56a0
+		sourceLineageTag: 9bef8f32-9c12-456a-a6fe-999b93cfbd12
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Average utilization
+
+		annotation SummarizationSetBy = User
+
+	partition 'Usage Summary (Last 14 days)' = entity
+		mode: directQuery
+		source
+			entityName: Usage Summary (Last 14 days)
+			expressionSource: 'DirectQuery to AS - Fabric Capacity Metrics'
+

@@ -1,0 +1,221 @@
+table 'Usage Operation (Last 30 days)'
+	isHidden
+	lineageTag: fcdb44f5-f14a-4a07-ae64-fc1997a4e07a
+	sourceLineageTag: 5b2e05ea-11d9-4cf5-80e8-b246539959df
+
+	column 'Capacity Id'
+		dataType: string
+		isHidden
+		lineageTag: e382258d-2abb-47de-b6bb-bf2a08eb7343
+		sourceLineageTag: 665d2644-6d3d-44e9-a9de-1adad617b3e7
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Capacity Id
+
+		annotation SummarizationSetBy = User
+
+	column 'Utilization type'
+		dataType: string
+		isHidden
+		lineageTag: 43d2c133-edf9-4319-88f6-8a6cb63f96c7
+		sourceLineageTag: 714808ff-51af-4192-90ee-098f2f9ca746
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Utilization type
+
+		annotation SummarizationSetBy = User
+
+	column Hours
+		dataType: dateTime
+		isHidden
+		formatString: General Number
+		lineageTag: 2fcb1357-7cda-410f-a7b4-a8f4ceba30e0
+		sourceLineageTag: c10d1a12-c00e-4636-97e2-4e76b709c10a
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Hours
+
+		annotation SummarizationSetBy = User
+
+	column 'CU (s)'
+		dataType: double
+		isHidden
+		lineageTag: a5dbc6d1-f483-4809-b43b-685f7af9879a
+		sourceLineageTag: 4b0d0dff-1293-47db-aa86-8d526af95e8c
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: CU (s)
+
+		annotation SummarizationSetBy = User
+
+	column 'Duration (s)'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 03871f06-4e01-4aa9-aae5-1a3b06a4ccac
+		sourceLineageTag: 8277d11b-338d-460c-a1a4-d9dee1c68810
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Duration (s)
+
+		annotation SummarizationSetBy = User
+
+	column 'Throttling (s)'
+		dataType: double
+		isHidden
+		lineageTag: 50ba2395-09c1-41a2-b4d6-ddd24a51f5f6
+		sourceLineageTag: 853f8b82-bb51-4b32-92ff-2711f2245d35
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Throttling (s)
+
+		annotation SummarizationSetBy = User
+
+	column Users
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 1c4f1962-2129-4cd8-a1a8-756fb41913f7
+		sourceLineageTag: f3f85551-bb07-449b-bc91-a599f45b73e5
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Users
+
+		annotation SummarizationSetBy = User
+
+	column TIMESTAMP
+		dataType: dateTime
+		isHidden
+		formatString: General Number
+		lineageTag: 6c396aaf-b5d8-4fce-9395-7b6ae13093ca
+		sourceLineageTag: 338b0a27-302a-45f1-ad17-c231043a4b88
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: TIMESTAMP
+
+		annotation SummarizationSetBy = User
+
+	column Region
+		dataType: string
+		isHidden
+		lineageTag: 96896411-f96f-4c7a-b443-87ee92ff5e6e
+		sourceLineageTag: 7a90a095-5fed-434e-b734-a09d1f1fc313
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Region
+
+		annotation SummarizationSetBy = User
+
+	column 'Failure operations'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: bb811e68-1084-4c10-ae85-b8b0abe5f93b
+		sourceLineageTag: 0d4546c5-c28f-453e-a8f0-a11357612cc5
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Failure operations
+
+		annotation SummarizationSetBy = User
+
+	column 'Rejected operations'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 4693fcfe-21b7-4d77-b2d3-057de04d822e
+		sourceLineageTag: b0579d62-2bdf-4be5-bd54-dca52d4e24c4
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Rejected operations
+
+		annotation SummarizationSetBy = User
+
+	column 'Interactive rejected operations'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 1eabb340-4263-4ff1-95dc-349bd1388e85
+		sourceLineageTag: 110e424f-adc0-4f50-be5d-c7e3bbe8e6aa
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Interactive rejected operations
+
+		annotation SummarizationSetBy = User
+
+	column 'Background rejected operations'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 53d65509-3c9d-495b-b8c8-b892d8a91b99
+		sourceLineageTag: 33d9f367-63d8-419e-91d3-17e49f75ca07
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Background rejected operations
+
+		annotation SummarizationSetBy = User
+
+	column 'Successful operations'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 91d750bf-f822-4333-b361-a9bc4dda46f5
+		sourceLineageTag: 982e1511-1590-426c-88f5-5da352be3dd2
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Successful operations
+
+		annotation SummarizationSetBy = User
+
+	column 'Inprogress operations'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 650c24d2-b465-4a17-825a-898c5cdb4b9a
+		sourceLineageTag: 34a05727-24eb-4092-8fe7-ccd53159ccb3
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Inprogress operations
+
+		annotation SummarizationSetBy = User
+
+	column 'Cancelled operations'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 6e4b1ae4-db9c-4a3b-abc7-d9436c23e930
+		sourceLineageTag: 80ea4567-4435-4a35-8ef7-edba71dfefdc
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Cancelled operations
+
+		annotation SummarizationSetBy = User
+
+	column 'Invalid operations'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: bf4bc505-c573-4ba6-9c48-9b05545b6f2e
+		sourceLineageTag: d9808d76-7201-478f-b0cd-f528d95c074c
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Invalid operations
+
+		annotation SummarizationSetBy = User
+
+	column 'Stopped operations'
+		dataType: int64
+		formatString: 0
+		lineageTag: bb768534-4778-4396-897c-b70aee150c88
+		sourceLineageTag: 0551dd8a-a69b-4ef6-8121-dff81bf5305f
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Stopped operations
+
+		annotation SummarizationSetBy = User
+
+	partition 'Usage Operation (Last 30 days)' = entity
+		mode: directQuery
+		source
+			entityName: Usage Operation (Last 30 days)
+			expressionSource: 'DirectQuery to AS - Fabric Capacity Metrics'
+

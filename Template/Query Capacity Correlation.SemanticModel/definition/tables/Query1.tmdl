@@ -1,0 +1,258 @@
+table Query1
+	lineageTag: 34a1098d-d31c-4c3d-9316-662e90a334ee
+
+	column normalized_operation_id
+		dataType: string
+		lineageTag: bdfad8a7-62cb-4b4f-bdcc-42dab38d52e7
+		summarizeBy: none
+		sourceColumn: normalized_operation_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column warehouse_item_id
+		dataType: string
+		lineageTag: 85a8ec93-a088-4f2c-818c-320d5364c021
+		summarizeBy: none
+		sourceColumn: warehouse_item_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column warehouse_name
+		dataType: string
+		lineageTag: f266352a-b401-467c-96ce-55df4419889c
+		summarizeBy: none
+		sourceColumn: warehouse_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column database_name
+		dataType: string
+		lineageTag: 7c5c77a9-5706-4bc3-b2f9-458924d2efbd
+		summarizeBy: none
+		sourceColumn: database_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column submit_time
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 997345ab-be17-4550-9a48-8066f251e95d
+		summarizeBy: none
+		sourceColumn: submit_time
+
+		variation Variation
+			isDefault
+			relationship: 844b4822-6f87-4816-b964-c634e2d7db17
+			defaultHierarchy: LocalDateTable_29c9e649-8eaa-4a9d-a6ea-d65413a4014a.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column start_time
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 3f43f233-3d5b-44ff-a707-847ae74ca053
+		summarizeBy: none
+		sourceColumn: start_time
+
+		variation Variation
+			isDefault
+			relationship: 8d7e8f60-ade1-41a5-9c1f-39151ebe3547
+			defaultHierarchy: LocalDateTable_02e33ab5-974a-4d7f-8ee4-393f86a6dfed.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column end_time
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: b37ae8b1-26e2-43e5-9901-59d71cbcd332
+		summarizeBy: none
+		sourceColumn: end_time
+
+		variation Variation
+			isDefault
+			relationship: e49218ce-6087-43a2-aef9-559a6d72d433
+			defaultHierarchy: LocalDateTable_19cf7b74-45cf-456a-8272-f4ca3d32c367.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column statement_type
+		dataType: string
+		lineageTag: 8faecee5-4451-4b4d-9dd4-89e82900f558
+		summarizeBy: none
+		sourceColumn: statement_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_elapsed_time_ms
+		dataType: int64
+		formatString: 0
+		lineageTag: e2a5c0ec-0d14-40cb-81f5-cac9b697b54d
+		summarizeBy: sum
+		sourceColumn: total_elapsed_time_ms
+
+		annotation SummarizationSetBy = Automatic
+
+	column allocated_cpu_time_ms
+		dataType: int64
+		formatString: 0
+		lineageTag: fc8d2afc-0e4f-4970-ac12-8214bbabc215
+		summarizeBy: sum
+		sourceColumn: allocated_cpu_time_ms
+
+		annotation SummarizationSetBy = Automatic
+
+	column login_name
+		dataType: string
+		lineageTag: ade23ddf-6c2f-47d6-824e-6a3a85fb52bf
+		summarizeBy: none
+		sourceColumn: login_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column row_count
+		dataType: int64
+		formatString: 0
+		lineageTag: ec7ef1d3-0494-4b9c-8a64-5f1f9731091b
+		summarizeBy: sum
+		sourceColumn: row_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: f262ff4c-d216-45b4-9187-73246737b1c5
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column session_id
+		dataType: int64
+		formatString: 0
+		lineageTag: a74dca83-27ce-461f-b93d-93bf9a18b37a
+		summarizeBy: sum
+		sourceColumn: session_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column connection_id
+		dataType: string
+		lineageTag: 6c8710ba-2e58-4c24-984a-26ac16cd903b
+		summarizeBy: none
+		sourceColumn: connection_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column program_name
+		dataType: string
+		lineageTag: fde05b56-e01b-4488-a4c6-3a62ff32bdd8
+		summarizeBy: none
+		sourceColumn: program_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column query_hash
+		dataType: string
+		lineageTag: 1d2b752b-d9e5-4e3e-b764-565cbfa922b7
+		summarizeBy: none
+		sourceColumn: query_hash
+
+		annotation SummarizationSetBy = Automatic
+
+	column label
+		dataType: string
+		lineageTag: c64c6a30-082e-4e6f-b292-f268b5dfd7c6
+		summarizeBy: none
+		sourceColumn: label
+
+		annotation SummarizationSetBy = Automatic
+
+	column result_cache_hit
+		dataType: int64
+		formatString: 0
+		lineageTag: 5c04384e-3d97-4e83-ad95-a60ab9206ba9
+		summarizeBy: sum
+		sourceColumn: result_cache_hit
+
+		annotation SummarizationSetBy = Automatic
+
+	column sql_pool_name
+		dataType: string
+		lineageTag: a29feceb-7816-4180-9ea0-bf85268f07d0
+		summarizeBy: none
+		sourceColumn: sql_pool_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column error_code
+		dataType: int64
+		formatString: 0
+		lineageTag: 3f6d6573-05b4-4602-b0b2-02c851101f4a
+		summarizeBy: sum
+		sourceColumn: error_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column error_severity
+		dataType: int64
+		formatString: 0
+		lineageTag: e11b24a2-f392-41fe-b99d-2a1d9f763e40
+		summarizeBy: sum
+		sourceColumn: error_severity
+
+		annotation SummarizationSetBy = Automatic
+
+	column error_state
+		dataType: int64
+		formatString: 0
+		lineageTag: 8e6c42e6-d4bf-4093-95bb-3131301caae4
+		summarizeBy: sum
+		sourceColumn: error_state
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_scanned_remote_storage_mb
+		dataType: double
+		lineageTag: a8320010-ecc1-48da-92c2-38dc6928f6aa
+		summarizeBy: sum
+		sourceColumn: data_scanned_remote_storage_mb
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column data_scanned_memory_mb
+		dataType: double
+		lineageTag: 9b9191a9-4c52-4a5c-80c2-72f70dca2a30
+		summarizeBy: sum
+		sourceColumn: data_scanned_memory_mb
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column data_scanned_disk_mb
+		dataType: double
+		lineageTag: 8bb46105-1979-40a7-9e3d-e5a5fe3f2730
+		summarizeBy: sum
+		sourceColumn: data_scanned_disk_mb
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column command
+		dataType: string
+		lineageTag: ebbd4f38-304b-4456-a2c5-19c96a23f4c5
+		summarizeBy: none
+		sourceColumn: command
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Query1 = m
+		mode: import
+		source =
+{{QUERY_DETAILS_M}}
+
+	annotation PBI_ResultType = Table
+
