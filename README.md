@@ -47,10 +47,15 @@ execution once even when it overlaps several hours.
 
 ## Option 1: Discover all Warehouses on a capacity
 
-In the workspace that contains the Fabric Capacity Metrics semantic model, copy
-the workspace connection from **Workspace settings** > **Premium** >
-**Workspace connection**. The XMLA server starts with
-`powerbi://api.powerbi.com/v1.0/myorg/`.
+In the workspace that contains the Fabric Capacity Metrics semantic model:
+
+1. Open **Workspace settings**.
+2. Select **Workspace type**.
+3. Under **Connection link**, select the copy icon.
+
+Use the complete copied value as `-CapacityMetricsEndpoint`. The connection
+link starts with `powerbi://api.powerbi.com/v1.0/myorg/`. Don't use the
+workspace URL from the browser address bar or append the semantic-model name.
 
 Run `az login`, then configure the project with the Fabric capacity ID and the
 copied XMLA server:
@@ -162,8 +167,9 @@ If Power BI Desktop reports that it can't find the analysis server:
 
 1. Confirm that `connection-settings.json` starts with
    `powerbi://api.powerbi.com/v1.0/myorg/`.
-2. Copy the workspace connection again from the workspace that contains the
-   **Fabric Capacity Metrics** semantic model.
+2. In the workspace that contains the **Fabric Capacity Metrics** semantic
+   model, open **Workspace settings** > **Workspace type**, and copy the value
+   under **Connection link**.
 3. Pass the full value with `-CapacityMetricsEndpoint`. Don't append the
    semantic-model name to the server.
 4. Confirm that `CapacityMetricsModel` matches the semantic-model display name.
