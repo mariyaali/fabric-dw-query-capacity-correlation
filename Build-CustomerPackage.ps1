@@ -14,7 +14,6 @@ $stagingPath = Join-Path ([System.IO.Path]::GetTempPath()) (
 )
 $packageEntries = @(
     "Template",
-    "docs",
     "Configure-CustomerTemplate.ps1",
     "query-details.template.sql",
     "query-executions.template.sql",

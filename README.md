@@ -8,10 +8,9 @@ tenant.
 ## Package contents
 
 The repository contains `Template`, the configuration script, SQL templates,
-an example Warehouse inventory, setup tests, the customer README, and a draft
-Microsoft Learn article. The customer ZIP excludes repository-only test and
-build files. It does not contain configured Warehouse connections or
-credentials.
+an example Warehouse inventory, setup tests, and the customer README. The
+customer ZIP excludes repository-only test and build files. It does not contain
+configured Warehouse connections or credentials.
 
 The `Configured` output intentionally contains the selected SQL endpoint names,
 Warehouse names, Warehouse item IDs, and Capacity Metrics model reference. It
