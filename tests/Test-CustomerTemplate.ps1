@@ -8,6 +8,7 @@ $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) (
 )
 $workspaceOutput = Join-Path $testRoot "Configured-Workspace"
 $endpointOutput = Join-Path $testRoot "Configured-Endpoint"
+$automaticOutput = Join-Path $testRoot "Configured-Automatic"
 $invalidOutput = Join-Path $testRoot "Configured-Invalid"
 $capacityId = "33333333-3333-3333-3333-333333333333"
 
@@ -66,7 +67,10 @@ function Invoke-RestMethod {
         }
     }
 
-    if ($Uri -match '/workspaces/44444444-4444-4444-4444-444444444444/items$') {
+    if (
+        $Uri -match
+        '/workspaces/44444444-4444-4444-4444-444444444444/items(\?type=SemanticModel)?$'
+    ) {
         return [pscustomobject]@{
             value = @([pscustomobject]@{
                 id = "55555555-5555-5555-5555-555555555555"
@@ -109,6 +113,19 @@ try {
 
     $expectedEndpoint =
         "powerbi://api.powerbi.com/v1.0/myorg/Customer%20Capacity%20Metrics"
+
+    & (Join-Path $root "Configure-CustomerTemplate.ps1") `
+        -CapacityId $capacityId `
+        -OutputPath $automaticOutput
+
+    $automaticSettings = Get-Content -Raw -Encoding UTF8 -LiteralPath (
+        Join-Path $automaticOutput "connection-settings.json"
+    ) | ConvertFrom-Json
+    Assert-Equal `
+        -Actual $automaticSettings.CapacityMetricsEndpoint `
+        -Expected $expectedEndpoint `
+        -Message "Automatic discovery must resolve the Capacity Metrics workspace."
+
     $workspaceSettings = Get-Content -Raw -Encoding UTF8 -LiteralPath (
         Join-Path $workspaceOutput "connection-settings.json"
     ) | ConvertFrom-Json

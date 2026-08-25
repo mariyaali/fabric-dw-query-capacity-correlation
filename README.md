@@ -47,26 +47,9 @@ execution once even when it overlaps several hours.
 
 ## Discover Warehouses on a capacity
 
-First, find the workspace created for the Capacity Metrics app:
-
-1. In Fabric, open **Workspaces**.
-2. Find the workspace that contains a semantic model named **Fabric Capacity
-   Metrics**. An app-installed workspace typically has a name that begins with
-   **Microsoft Fabric Capacity Metrics**.
-3. If more than one Capacity Metrics workspace exists, open the associated
-   report and confirm that its Capacity selector contains the capacity that you
-   want to analyze.
-4. Return to that workspace and open **Workspace settings**.
-5. Select **Workspace type**.
-6. Under **Connection link**, select the copy icon.
-
-Use the complete copied value as `-CapacityMetricsEndpoint`. The connection
-link starts with `powerbi://api.powerbi.com/v1.0/myorg/`. Don't use the
-workspace URL from the browser address bar or append the semantic-model name.
-Don't copy the Connection link from a workspace that only contains the
-Warehouses. The connection link and Capacity Metrics semantic model must come
-from the same workspace. Don't construct the connection link from a workspace
-name; always copy the value shown in Workspace settings.
+The setup script automatically searches accessible workspaces for a semantic
+model named **Fabric Capacity Metrics**. Customers don't need to find or copy
+an XMLA connection link.
 
 Get the Fabric capacity ID:
 
@@ -74,14 +57,32 @@ Get the Fabric capacity ID:
 2. Open **Capacity settings** and select the capacity.
 3. Copy the GUID after `/capacities/` in the browser URL.
 
-Run `az login`, then configure the project with the capacity ID and copied
-connection link:
+Run `az login`, then configure the project with the capacity ID:
 
 ```powershell
 .\Configure-CustomerTemplate.ps1 `
-  -CapacityMetricsEndpoint "powerbi://api.powerbi.com/v1.0/myorg/Capacity%20Metrics%20Workspace" `
   -CapacityId "00000000-0000-0000-0000-000000000000"
 ```
+
+If exactly one accessible workspace contains the semantic model, the script
+uses that workspace and constructs the required XMLA server. If no match is
+found, install the Microsoft Fabric Capacity Metrics app or request access to
+its workspace and semantic model.
+
+If multiple Capacity Metrics installations are accessible, the script stops
+and lists their workspace names. Open the associated reports, identify the one
+whose Capacity selector contains the target capacity, and run the command again
+with the exact name:
+
+```powershell
+.\Configure-CustomerTemplate.ps1 `
+  -CapacityId "00000000-0000-0000-0000-000000000000" `
+  -CapacityMetricsWorkspace "Microsoft Fabric Capacity Metrics <installation>"
+```
+
+`-CapacityMetricsEndpoint` remains available as an advanced override when an
+administrator supplies the complete XMLA connection link. Don't use a
+Warehouse-only workspace connection or construct an endpoint manually.
 
 The script first uses the Fabric Admin API to find active workspaces assigned to
 the capacity. If the token lacks `Tenant.Read.All`, it falls back to the
@@ -106,10 +107,9 @@ inventory to `warehouses.configured.csv`. It also writes the normalized
 Capacity Metrics XMLA server and semantic-model name to
 `connection-settings.json`.
 
-Instead of `-CapacityMetricsEndpoint`, you can pass the exact workspace display
-name with `-CapacityMetricsWorkspace`. The script converts the display name to
-the encoded XMLA server format. For example, spaces appear as `%20`. This
-encoding is expected.
+When `-CapacityMetricsWorkspace` is supplied, the script converts the exact
+workspace display name to the encoded XMLA server format. For example, spaces
+appear as `%20`. This encoding is expected.
 
 The default time-zone settings use Pacific offsets and North American daylight
 saving transitions. For another North American zone, pass
@@ -158,11 +158,10 @@ If Power BI Desktop reports that it can't find the analysis server:
 
 1. Confirm that `connection-settings.json` starts with
    `powerbi://api.powerbi.com/v1.0/myorg/`.
-2. In the workspace that contains the **Fabric Capacity Metrics** semantic
-   model, open **Workspace settings** > **Workspace type**, and copy the value
-   under **Connection link**.
-3. Pass the full value with `-CapacityMetricsEndpoint`. Don't append the
-   semantic-model name to the server.
+2. Run the configuration again without `-CapacityMetricsEndpoint` so the
+   script discovers the Capacity Metrics workspace.
+3. If the script lists multiple matches, pass one exact workspace name with
+   `-CapacityMetricsWorkspace`.
 4. Confirm that `CapacityMetricsModel` matches the semantic-model display name.
 5. Clear the failed Capacity Metrics permission under **File** > **Options and
    settings** > **Data source settings**, and then sign in again.
@@ -174,13 +173,11 @@ and writes one normalized value.
 ### Capacity Metrics model isn't found
 
 `PowerBIEntityNotFound` means the connection link points to a workspace that
-doesn't contain the semantic model named by `CapacityMetricsModel`. Copy
-**Workspace settings** > **Workspace type** > **Connection link** from the
-workspace where the Fabric Capacity Metrics app installed its semantic model,
-and then run the configuration again. If several app installations exist,
-confirm that the selected Capacity Metrics report includes the target capacity.
-Don't use the connection link from a workspace that only contains the
-Warehouses, and don't construct the connection link manually.
+doesn't contain the semantic model named by `CapacityMetricsModel`. Remove
+`-CapacityMetricsEndpoint` and run the configuration again so the script
+discovers valid installations. If it lists several workspace names, confirm
+which Capacity Metrics report includes the target capacity and pass that exact
+name with `-CapacityMetricsWorkspace`.
 
 ### Tenant, subscription, or expired permissions
 

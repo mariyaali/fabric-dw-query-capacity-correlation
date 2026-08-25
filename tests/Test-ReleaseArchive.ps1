@@ -100,7 +100,7 @@ try {
 param(
     [Parameter(Mandatory)][string]$OutputPath,
     [Parameter(Mandatory)]
-    [ValidateSet("Endpoint", "Workspace")]
+    [ValidateSet("Automatic", "Workspace")]
     [string]$ConnectionMode
 )
 
@@ -136,7 +136,10 @@ function global:Invoke-RestMethod {
         }
     }
 
-    if ($Uri -match '/workspaces/44444444-4444-4444-4444-444444444444/items$') {
+    if (
+        $Uri -match
+        '/workspaces/44444444-4444-4444-4444-444444444444/items(\?type=SemanticModel)?$'
+    ) {
         return [pscustomobject]@{
             value = @([pscustomobject]@{
                 id = "55555555-5555-5555-5555-555555555555"
@@ -174,11 +177,7 @@ $parameters = @{
     OutputPath = $OutputPath
     Force = $true
 }
-if ($ConnectionMode -eq "Endpoint") {
-    $parameters.CapacityMetricsEndpoint =
-        "powerbi://api.powerbi.com/v1.0/myorg/Customer Capacity Metrics"
-}
-else {
+if ($ConnectionMode -eq "Workspace") {
     $parameters.CapacityMetricsWorkspace = "Customer Capacity Metrics"
 }
 
@@ -191,7 +190,7 @@ else {
         "-ExecutionPolicy", "Bypass",
         "-File", $wrapperPath,
         "-OutputPath", $ps51Output,
-        "-ConnectionMode", "Endpoint"
+        "-ConnectionMode", "Automatic"
     )
     & powershell.exe @ps51Args
     Assert-True `

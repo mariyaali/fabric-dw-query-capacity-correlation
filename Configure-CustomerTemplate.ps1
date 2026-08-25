@@ -252,6 +252,74 @@ function Resolve-CapacityMetricsEndpoint {
     return $xmlaPrefix + $encodedWorkspace
 }
 
+function Find-CapacityMetricsWorkspace {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Model
+    )
+
+    $token = Get-FabricAccessToken
+    $workspaces = @(
+        Get-FabricCollection `
+            -Uri "https://api.fabric.microsoft.com/v1/workspaces" `
+            -CollectionProperty "value" `
+            -Token $token
+    )
+    $matches = [System.Collections.Generic.List[object]]::new()
+
+    foreach ($workspace in $workspaces) {
+        try {
+            $itemsUri =
+                "https://api.fabric.microsoft.com/v1/workspaces/" +
+                "$($workspace.id)/items?type=SemanticModel"
+            $models = @(
+                Get-FabricCollection `
+                    -Uri $itemsUri `
+                    -CollectionProperty "value" `
+                    -Token $token |
+                    Where-Object {
+                        $_.type -eq "SemanticModel" -and
+                        $_.displayName -ceq $Model
+                    }
+            )
+            if ($models.Count -gt 0) {
+                $matches.Add($workspace)
+            }
+        }
+        catch {
+            Write-Verbose (
+                "Couldn't inspect semantic models in workspace '{0}': {1}" -f
+                $workspace.displayName,
+                $_.Exception.Message
+            )
+        }
+    }
+
+    if ($matches.Count -eq 0) {
+        throw (
+            "No accessible workspace contains a semantic model named '$Model'. " +
+            "Install the Fabric Capacity Metrics app or request access to its " +
+            "workspace and semantic model."
+        )
+    }
+
+    if ($matches.Count -gt 1) {
+        $workspaceNames = @(
+            $matches |
+                ForEach-Object { "'$($_.displayName)'" } |
+                Sort-Object
+        )
+        throw (
+            "More than one accessible workspace contains '$Model': " +
+            ($workspaceNames -join ", ") +
+            ". Run the command again with -CapacityMetricsWorkspace and one " +
+            "of these exact workspace names."
+        )
+    }
+
+    return $matches[0].displayName
+}
+
 function Assert-CapacityMetricsModel {
     param(
         [Parameter(Mandatory)]
@@ -481,8 +549,17 @@ foreach ($warehouse in $warehouses) {
     }
 }
 
+$resolvedCapacityMetricsWorkspace = $CapacityMetricsWorkspace
+if (
+    [string]::IsNullOrWhiteSpace($CapacityMetricsEndpoint) -and
+    [string]::IsNullOrWhiteSpace($resolvedCapacityMetricsWorkspace)
+) {
+    $resolvedCapacityMetricsWorkspace = Find-CapacityMetricsWorkspace `
+        -Model $CapacityMetricsModel
+}
+
 $capacityEndpoint = Resolve-CapacityMetricsEndpoint `
-    -Workspace $CapacityMetricsWorkspace `
+    -Workspace $resolvedCapacityMetricsWorkspace `
     -Endpoint $CapacityMetricsEndpoint
 Assert-CapacityMetricsModel `
     -Endpoint $capacityEndpoint `
