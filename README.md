@@ -47,18 +47,26 @@ execution once even when it overlaps several hours.
 
 ## Discover Warehouses on a capacity
 
-In the workspace that contains the Fabric Capacity Metrics semantic model:
+First, find the workspace created for the Capacity Metrics app:
 
-1. Open **Workspace settings**.
-2. Select **Workspace type**.
-3. Under **Connection link**, select the copy icon.
+1. In Fabric, open **Workspaces**.
+2. Find the workspace that contains a semantic model named **Fabric Capacity
+   Metrics**. An app-installed workspace typically has a name that begins with
+   **Microsoft Fabric Capacity Metrics**.
+3. If more than one Capacity Metrics workspace exists, open the associated
+   report and confirm that its Capacity selector contains the capacity that you
+   want to analyze.
+4. Return to that workspace and open **Workspace settings**.
+5. Select **Workspace type**.
+6. Under **Connection link**, select the copy icon.
 
 Use the complete copied value as `-CapacityMetricsEndpoint`. The connection
 link starts with `powerbi://api.powerbi.com/v1.0/myorg/`. Don't use the
 workspace URL from the browser address bar or append the semantic-model name.
 Don't copy the Connection link from a workspace that only contains the
 Warehouses. The connection link and Capacity Metrics semantic model must come
-from the same workspace.
+from the same workspace. Don't construct the connection link from a workspace
+name; always copy the value shown in Workspace settings.
 
 Get the Fabric capacity ID:
 
@@ -169,8 +177,10 @@ and writes one normalized value.
 doesn't contain the semantic model named by `CapacityMetricsModel`. Copy
 **Workspace settings** > **Workspace type** > **Connection link** from the
 workspace where the Fabric Capacity Metrics app installed its semantic model,
-and then run the configuration again. Don't use the connection link from a
-workspace that only contains the Warehouses.
+and then run the configuration again. If several app installations exist,
+confirm that the selected Capacity Metrics report includes the target capacity.
+Don't use the connection link from a workspace that only contains the
+Warehouses, and don't construct the connection link manually.
 
 ### Tenant, subscription, or expired permissions
 
