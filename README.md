@@ -56,6 +56,9 @@ In the workspace that contains the Fabric Capacity Metrics semantic model:
 Use the complete copied value as `-CapacityMetricsEndpoint`. The connection
 link starts with `powerbi://api.powerbi.com/v1.0/myorg/`. Don't use the
 workspace URL from the browser address bar or append the semantic-model name.
+Don't copy the Connection link from a workspace that only contains the
+Warehouses. The connection link and Capacity Metrics semantic model must come
+from the same workspace.
 
 Get the Fabric capacity ID:
 
@@ -159,6 +162,15 @@ If Power BI Desktop reports that it can't find the analysis server:
 An encoded workspace segment such as `Capacity%20Metrics%20Workspace` is valid.
 The script accepts either the encoded endpoint or the workspace display name
 and writes one normalized value.
+
+### Capacity Metrics model isn't found
+
+`PowerBIEntityNotFound` means the connection link points to a workspace that
+doesn't contain the semantic model named by `CapacityMetricsModel`. Copy
+**Workspace settings** > **Workspace type** > **Connection link** from the
+workspace where the Fabric Capacity Metrics app installed its semantic model,
+and then run the configuration again. Don't use the connection link from a
+workspace that only contains the Warehouses.
 
 ### Tenant, subscription, or expired permissions
 

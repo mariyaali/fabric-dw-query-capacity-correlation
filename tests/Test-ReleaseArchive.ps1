@@ -126,6 +126,27 @@ function global:Invoke-RestMethod {
         }
     }
 
+    if ($Uri -match '/v1/workspaces$') {
+        return [pscustomobject]@{
+            value = @([pscustomobject]@{
+                id = "44444444-4444-4444-4444-444444444444"
+                displayName = "Customer Capacity Metrics"
+            })
+            continuationUri = $null
+        }
+    }
+
+    if ($Uri -match '/workspaces/44444444-4444-4444-4444-444444444444/items$') {
+        return [pscustomobject]@{
+            value = @([pscustomobject]@{
+                id = "55555555-5555-5555-5555-555555555555"
+                displayName = "Fabric Capacity Metrics"
+                type = "SemanticModel"
+            })
+            continuationUri = $null
+        }
+    }
+
     if ($Uri -match '/items$') {
         return [pscustomobject]@{
             value = @([pscustomobject]@{

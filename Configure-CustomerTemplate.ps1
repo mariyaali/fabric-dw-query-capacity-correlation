@@ -252,6 +252,67 @@ function Resolve-CapacityMetricsEndpoint {
     return $xmlaPrefix + $encodedWorkspace
 }
 
+function Assert-CapacityMetricsModel {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Endpoint,
+
+        [Parameter(Mandatory)]
+        [string]$Model
+    )
+
+    $xmlaPrefix = "powerbi://api.powerbi.com/v1.0/myorg/"
+    $workspaceName = [Uri]::UnescapeDataString(
+        $Endpoint.Substring($xmlaPrefix.Length)
+    )
+    $token = Get-FabricAccessToken
+    $workspaces = @(
+        Get-FabricCollection `
+            -Uri "https://api.fabric.microsoft.com/v1/workspaces" `
+            -CollectionProperty "value" `
+            -Token $token |
+            Where-Object { $_.displayName -ceq $workspaceName }
+    )
+
+    if ($workspaces.Count -eq 0) {
+        throw (
+            "Capacity Metrics workspace '$workspaceName' wasn't found or isn't " +
+            "accessible. Copy the Connection link from the workspace that contains " +
+            "the '$Model' semantic model, not from a Warehouse workspace."
+        )
+    }
+
+    if ($workspaces.Count -gt 1) {
+        throw (
+            "More than one accessible workspace is named '$workspaceName'. Rename " +
+            "the Capacity Metrics workspace so its Connection link is unambiguous."
+        )
+    }
+
+    $itemsUri =
+        "https://api.fabric.microsoft.com/v1/workspaces/" +
+        "$($workspaces[0].id)/items"
+    $models = @(
+        Get-FabricCollection `
+            -Uri $itemsUri `
+            -CollectionProperty "value" `
+            -Token $token |
+            Where-Object {
+                $_.type -eq "SemanticModel" -and
+                $_.displayName -ceq $Model
+            }
+    )
+
+    if ($models.Count -eq 0) {
+        throw (
+            "Semantic model '$Model' wasn't found in workspace '$workspaceName'. " +
+            "Copy the Connection link from the workspace that contains the Capacity " +
+            "Metrics semantic model, or pass its exact name with " +
+            "-CapacityMetricsModel."
+        )
+    }
+}
+
 function Convert-SqlTo-MString {
     param([Parameter(Mandatory)][string]$Sql)
     $normalized = $Sql -replace "`r`n|`r|`n", "#(lf)"
@@ -420,6 +481,13 @@ foreach ($warehouse in $warehouses) {
     }
 }
 
+$capacityEndpoint = Resolve-CapacityMetricsEndpoint `
+    -Workspace $CapacityMetricsWorkspace `
+    -Endpoint $CapacityMetricsEndpoint
+Assert-CapacityMetricsModel `
+    -Endpoint $capacityEndpoint `
+    -Model $CapacityMetricsModel
+
 if (Test-Path -LiteralPath $OutputPath) {
     if (-not $Force) {
         throw "Output folder already exists. Use -Force or choose another -OutputPath."
@@ -450,10 +518,6 @@ $detailM = New-CombinedWarehouseM `
 $hourWindowsM = New-HourWindowsM `
     -StandardOffset $StandardUtcOffsetHours `
     -DaylightOffset $DaylightUtcOffsetHours
-
-$capacityEndpoint = Resolve-CapacityMetricsEndpoint `
-    -Workspace $CapacityMetricsWorkspace `
-    -Endpoint $CapacityMetricsEndpoint
 
 $replacements = [ordered]@{
     "{{CAPACITY_METRICS_ENDPOINT}}" = $capacityEndpoint

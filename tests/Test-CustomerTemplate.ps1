@@ -8,6 +8,7 @@ $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) (
 )
 $workspaceOutput = Join-Path $testRoot "Configured-Workspace"
 $endpointOutput = Join-Path $testRoot "Configured-Endpoint"
+$invalidOutput = Join-Path $testRoot "Configured-Invalid"
 $capacityId = "33333333-3333-3333-3333-333333333333"
 
 function Assert-Equal {
@@ -50,6 +51,27 @@ function Invoke-RestMethod {
             workspaces = @([pscustomobject]@{
                 id = "11111111-1111-1111-1111-111111111111"
                 name = "Customer Workspace"
+            })
+            continuationUri = $null
+        }
+    }
+
+    if ($Uri -match '/v1/workspaces$') {
+        return [pscustomobject]@{
+            value = @([pscustomobject]@{
+                id = "44444444-4444-4444-4444-444444444444"
+                displayName = "Customer Capacity Metrics"
+            })
+            continuationUri = $null
+        }
+    }
+
+    if ($Uri -match '/workspaces/44444444-4444-4444-4444-444444444444/items$') {
+        return [pscustomobject]@{
+            value = @([pscustomobject]@{
+                id = "55555555-5555-5555-5555-555555555555"
+                displayName = "Fabric Capacity Metrics"
+                type = "SemanticModel"
             })
             continuationUri = $null
         }
@@ -132,6 +154,23 @@ try {
         -Actual $configuredCsv.Count `
         -Expected 1 `
         -Message "Configured Warehouse inventory has an unexpected row count."
+
+    $invalidError = $null
+    try {
+        & (Join-Path $root "Configure-CustomerTemplate.ps1") `
+            -CapacityMetricsWorkspace "Warehouse-Only Workspace" `
+            -CapacityId $capacityId `
+            -OutputPath $invalidOutput
+    }
+    catch {
+        $invalidError = $_.Exception.Message
+    }
+    Assert-True `
+        -Condition ($invalidError -like "*wasn't found*") `
+        -Message "A mismatched Capacity Metrics workspace must fail configuration."
+    Assert-True `
+        -Condition (-not (Test-Path -LiteralPath $invalidOutput)) `
+        -Message "Invalid Capacity Metrics settings must not create output."
 
     $jsonFiles = Get-ChildItem -LiteralPath $endpointOutput -Recurse -Filter *.json
     foreach ($jsonFile in $jsonFiles) {
